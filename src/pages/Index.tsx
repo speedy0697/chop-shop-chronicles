@@ -4,35 +4,58 @@ import { DayCounter } from "@/components/DayCounter";
 import { AddHaircutForm } from "@/components/AddHaircutForm";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, User, Scissors } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Plus, User, Scissors, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [haircuts, setHaircuts] = useState<Haircut[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const { user, session } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  // Mock data for initial load
   useEffect(() => {
-    const mockHaircuts: Haircut[] = [
-      {
-        id: "1",
-        date: "2024-01-15",
-        location: "Tony's Barbershop",
-        photos: ["https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&h=400&fit=crop"],
-        notes: "Classic fade, really happy with how it turned out!",
-        daysAgo: 5
-      },
-      {
-        id: "2", 
-        date: "2023-12-20",
-        location: "Downtown Hair Studio",
-        photos: ["https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=400&fit=crop"],
-        notes: "Tried something new with the styling",
-        daysAgo: 31
+    if (!session) {
+      navigate("/auth");
+      return;
+    }
+    fetchHaircuts();
+  }, [session, navigate]);
+
+  const fetchHaircuts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("haircuts")
+        .select("*")
+        .order("date", { ascending: false });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load haircuts",
+        });
+      } else {
+        const formattedHaircuts = (data || []).map(haircut => ({
+          id: haircut.id,
+          date: haircut.date,
+          location: haircut.location,
+          notes: haircut.notes || "",
+          photos: haircut.photo_urls || [],
+          daysAgo: calculateDaysSince(haircut.date)
+        }));
+        setHaircuts(formattedHaircuts);
       }
-    ];
-    setHaircuts(mockHaircuts);
-  }, []);
+    } catch (error) {
+      console.error("Error fetching haircuts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const calculateDaysSince = (date: string) => {
     const haircutDate = new Date(date);
@@ -41,26 +64,89 @@ const Index = () => {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  const addHaircut = (newHaircut: Omit<Haircut, 'id' | 'daysAgo'>) => {
-    const haircut: Haircut = {
-      ...newHaircut,
-      id: Date.now().toString(),
-      daysAgo: calculateDaysSince(newHaircut.date)
-    };
-    setHaircuts(prev => [haircut, ...prev].map(h => ({
-      ...h,
-      daysAgo: calculateDaysSince(h.date)
-    })));
-    setShowAddForm(false);
+  const addHaircut = async (newHaircut: Omit<Haircut, 'id' | 'daysAgo'>) => {
+    try {
+      const { error } = await supabase
+        .from("haircuts")
+        .insert([{
+          user_id: user?.id,
+          date: newHaircut.date,
+          location: newHaircut.location,
+          notes: newHaircut.notes,
+          photo_urls: newHaircut.photos || []
+        }]);
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to add haircut",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Haircut added successfully!",
+        });
+        setShowAddForm(false);
+        fetchHaircuts();
+      }
+    } catch (error) {
+      console.error("Error adding haircut:", error);
+    }
   };
 
-  const deleteHaircut = (id: string) => {
-    setHaircuts(prev => prev.filter(h => h.id !== id));
+  const deleteHaircut = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("haircuts")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to delete haircut",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Haircut deleted successfully!",
+        });
+        fetchHaircuts();
+      }
+    } catch (error) {
+      console.error("Error deleting haircut:", error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to sign out",
+      });
+    } else {
+      navigate("/auth");
+    }
   };
 
   const daysSinceLastCut = haircuts.length > 0 
     ? Math.min(...haircuts.map(h => h.daysAgo))
     : 0;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your haircuts...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -85,6 +171,15 @@ const Index = () => {
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Haircut
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
               </Button>
               
               <Link to="/profile">
