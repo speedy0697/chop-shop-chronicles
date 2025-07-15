@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Index = () => {
   const [haircuts, setHaircuts] = useState<Haircut[]>([]);
@@ -165,6 +166,8 @@ const Index = () => {
             </div>
             
             <div className="flex items-center gap-3">
+              <ThemeToggle />
+              
               <Button 
                 onClick={() => setShowAddForm(true)}
                 className="shadow-soft"
