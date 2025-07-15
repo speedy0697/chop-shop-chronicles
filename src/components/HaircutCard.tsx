@@ -42,7 +42,8 @@ export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => 
             <img 
               src={haircut.photos[0]} 
               alt="Haircut"
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+              onClick={() => onEdit?.(haircut)}
             />
           </div>
         )}
