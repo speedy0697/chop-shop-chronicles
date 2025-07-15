@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, MapPin, Camera, Plus, X } from "lucide-react";
+import { Calendar, Camera, Plus, X } from "lucide-react";
 import { Haircut } from "./HaircutCard";
+import { LocationSearch } from "./LocationSearch";
 import heic2any from "heic2any";
 
 interface AddHaircutFormProps {
@@ -121,19 +122,10 @@ export const AddHaircutForm = ({ onAdd, onCancel }: AddHaircutFormProps) => {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="location" className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              Location
-            </Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-              placeholder="e.g., Tony's Barbershop"
-              required
-            />
-          </div>
+          <LocationSearch
+            value={formData.location}
+            onChange={(location) => setFormData(prev => ({ ...prev, location }))}
+          />
         </div>
 
         <div className="space-y-2">

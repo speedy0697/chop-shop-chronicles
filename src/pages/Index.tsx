@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { HaircutCard, Haircut } from "@/components/HaircutCard";
 import { DayCounter } from "@/components/DayCounter";
 import { AddHaircutForm } from "@/components/AddHaircutForm";
+import { HaircutFilters } from "@/components/HaircutFilters";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus, User, Scissors, LogOut } from "lucide-react";
@@ -13,6 +14,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Index = () => {
   const [haircuts, setHaircuts] = useState<Haircut[]>([]);
+  const [filteredHaircuts, setFilteredHaircuts] = useState<Haircut[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const { user, session } = useAuth();
@@ -50,6 +52,7 @@ const Index = () => {
           daysAgo: calculateDaysSince(haircut.date)
         }));
         setHaircuts(formattedHaircuts);
+        setFilteredHaircuts(formattedHaircuts);
       }
     } catch (error) {
       console.error("Error fetching haircuts:", error);
@@ -138,6 +141,48 @@ const Index = () => {
     ? Math.min(...haircuts.map(h => h.daysAgo))
     : 0;
 
+  const handleFilter = (filters: {
+    location: string;
+    startDate: Date | undefined;
+    endDate: Date | undefined;
+    notes: string;
+  }) => {
+    let filtered = [...haircuts];
+
+    // Filter by location
+    if (filters.location) {
+      filtered = filtered.filter(haircut =>
+        haircut.location.toLowerCase().includes(filters.location.toLowerCase())
+      );
+    }
+
+    // Filter by date range
+    if (filters.startDate) {
+      filtered = filtered.filter(haircut =>
+        new Date(haircut.date) >= filters.startDate!
+      );
+    }
+
+    if (filters.endDate) {
+      filtered = filtered.filter(haircut =>
+        new Date(haircut.date) <= filters.endDate!
+      );
+    }
+
+    // Filter by notes
+    if (filters.notes) {
+      filtered = filtered.filter(haircut =>
+        haircut.notes?.toLowerCase().includes(filters.notes.toLowerCase())
+      );
+    }
+
+    setFilteredHaircuts(filtered);
+  };
+
+  const clearFilters = () => {
+    setFilteredHaircuts(haircuts);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
@@ -219,9 +264,17 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">Your Haircuts</h2>
             <span className="text-sm text-muted-foreground">
-              {haircuts.length} {haircuts.length === 1 ? 'haircut' : 'haircuts'} recorded
+              {filteredHaircuts.length} of {haircuts.length} {haircuts.length === 1 ? 'haircut' : 'haircuts'}
             </span>
           </div>
+
+          {/* Filters */}
+          {haircuts.length > 0 && (
+            <HaircutFilters 
+              onFilter={handleFilter}
+              onClear={clearFilters}
+            />
+          )}
 
           {haircuts.length === 0 ? (
             <div className="text-center py-12">
@@ -237,7 +290,7 @@ const Index = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {haircuts.map((haircut) => (
+              {filteredHaircuts.map((haircut) => (
                 <HaircutCard 
                   key={haircut.id}
                   haircut={haircut}
