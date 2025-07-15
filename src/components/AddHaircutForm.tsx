@@ -25,11 +25,24 @@ export const AddHaircutForm = ({ onAdd, onCancel }: AddHaircutFormProps) => {
     const files = event.target.files;
     if (files) {
       for (const file of Array.from(files)) {
+        console.log('Processing file:', {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          isHeic: file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
+        });
+        
         try {
           let processedFile = file;
           
-          // Check if file is HEIC and convert it
-          if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+          // Check if file is HEIC/HEIF and convert it
+          const isHeicFile = file.name.toLowerCase().endsWith('.heic') || 
+                            file.name.toLowerCase().endsWith('.heif') ||
+                            file.type === 'image/heic' || 
+                            file.type === 'image/heif';
+          
+          if (isHeicFile) {
+            console.log('Converting HEIC/HEIF file:', file.name);
             const convertedBlob = await heic2any({
               blob: file,
               toType: "image/jpeg",
@@ -38,24 +51,28 @@ export const AddHaircutForm = ({ onAdd, onCancel }: AddHaircutFormProps) => {
             
             // heic2any can return an array, so handle both cases
             const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-            processedFile = new File([blob], file.name.replace(/\.heic$/i, '.jpg'), {
+            processedFile = new File([blob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), {
               type: 'image/jpeg'
             });
+            console.log('HEIC conversion successful, new file:', processedFile.name);
           }
           
           const reader = new FileReader();
           reader.onload = (e) => {
             if (e.target?.result) {
+              console.log('File successfully read as data URL, adding to photos');
               setPhotos(prev => [...prev, e.target!.result as string]);
             }
           };
           reader.readAsDataURL(processedFile);
         } catch (error) {
           console.error('Error processing image:', error);
+          console.log('Attempting to process original file as fallback');
           // If conversion fails, try to process the original file anyway
           const reader = new FileReader();
           reader.onload = (e) => {
             if (e.target?.result) {
+              console.log('Fallback: File successfully read as data URL');
               setPhotos(prev => [...prev, e.target!.result as string]);
             }
           };
@@ -160,7 +177,7 @@ export const AddHaircutForm = ({ onAdd, onCancel }: AddHaircutFormProps) => {
               <Plus className="h-6 w-6 text-muted-foreground" />
               <input
                 type="file"
-                accept="image/*,.heic"
+                accept="image/*,.heic,.heif,.HEIC,.HEIF"
                 multiple
                 onChange={handlePhotoUpload}
                 className="hidden"
