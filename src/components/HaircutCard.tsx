@@ -1,13 +1,25 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, MoreVertical } from "lucide-react";
+import { Calendar, MapPin, MoreVertical, Trash2, Pen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { EditHaircutForm } from "./EditHaircutForm";
 
 export interface Haircut {
   id: string;
@@ -25,6 +37,9 @@ interface HaircutCardProps {
 }
 
 export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -33,6 +48,27 @@ export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => 
       day: 'numeric'
     });
   };
+
+  const handleImageClick = () => {
+    setShowEditForm(true);
+  };
+
+  const handleEdit = (updatedHaircut: Haircut) => {
+    if (onEdit) {
+      onEdit(updatedHaircut);
+    }
+    setShowEditForm(false);
+  };
+
+  if (showEditForm) {
+    return (
+      <EditHaircutForm
+        haircut={haircut}
+        onSave={handleEdit}
+        onCancel={() => setShowEditForm(false)}
+      />
+    );
+  }
 
   return (
     <Card className="overflow-hidden bg-card hover:shadow-soft transition-all duration-300 border-border/50">
@@ -43,7 +79,7 @@ export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => 
               src={haircut.photos[0]} 
               alt="Haircut"
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-              onClick={() => onEdit?.(haircut)}
+              onClick={handleImageClick}
             />
           </div>
         )}
@@ -56,13 +92,15 @@ export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => 
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit?.(haircut)}>
+              <DropdownMenuItem onClick={() => setShowEditForm(true)}>
+                <Pen className="h-4 w-4 mr-2" />
                 Edit
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={() => onDelete?.(haircut.id)}
+                onClick={() => setShowDeleteDialog(true)}
                 className="text-destructive"
               >
+                <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -112,6 +150,27 @@ export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => 
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Haircut</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this haircut? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => onDelete?.(haircut.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

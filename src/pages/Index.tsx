@@ -124,6 +124,36 @@ const Index = () => {
     }
   };
 
+  const editHaircut = async (updatedHaircut: Haircut) => {
+    try {
+      const { error } = await supabase
+        .from("haircuts")
+        .update({
+          date: updatedHaircut.date,
+          location: updatedHaircut.location,
+          notes: updatedHaircut.notes,
+          photo_urls: updatedHaircut.photos || []
+        })
+        .eq("id", updatedHaircut.id);
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update haircut",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Haircut updated successfully!",
+        });
+        fetchHaircuts();
+      }
+    } catch (error) {
+      console.error("Error updating haircut:", error);
+    }
+  };
+
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -295,6 +325,7 @@ const Index = () => {
                   key={haircut.id}
                   haircut={haircut}
                   onDelete={deleteHaircut}
+                  onEdit={editHaircut}
                 />
               ))}
             </div>
