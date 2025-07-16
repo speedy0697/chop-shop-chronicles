@@ -168,7 +168,12 @@ const Index = () => {
   };
 
   const daysSinceLastCut = haircuts.length > 0 
-    ? Math.min(...haircuts.map(h => h.daysAgo))
+    ? calculateDaysSince(
+        haircuts.reduce((latest, h) => 
+          new Date(h.date) > new Date(latest) ? h.date : latest, 
+          haircuts[0].date
+        )
+      )
     : 0;
 
   const handleFilter = (filters: {
