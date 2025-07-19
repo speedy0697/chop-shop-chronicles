@@ -37,7 +37,7 @@ export interface Haircut {
   daysAgo: number;
   trimmer?: string;
   rating: number;
-  price?: number;
+  price?: string;
 }
 
 interface HaircutCardProps {

@@ -20,7 +20,7 @@ export const AddHaircutForm = ({ onAdd, onCancel }: AddHaircutFormProps) => {
     location: '',
     notes: '',
     trimmer: '',
-    rating: 5,
+    rating: 0,
     price: '',
   });
   const [photos, setPhotos] = useState<string[]>([]);
@@ -97,7 +97,7 @@ export const AddHaircutForm = ({ onAdd, onCancel }: AddHaircutFormProps) => {
     onAdd({
       ...formData,
       photos,
-      price: formData.price ? parseFloat(formData.price) : undefined,
+      price: formData.price || undefined,
     });
   };
 
@@ -139,7 +139,6 @@ export const AddHaircutForm = ({ onAdd, onCancel }: AddHaircutFormProps) => {
               id="trimmer"
               value={formData.trimmer}
               onChange={(e) => setFormData(prev => ({ ...prev, trimmer: e.target.value }))}
-              placeholder="e.g., Barber name, salon name..."
             />
           </div>
 
@@ -147,11 +146,9 @@ export const AddHaircutForm = ({ onAdd, onCancel }: AddHaircutFormProps) => {
             <Label htmlFor="price">Price (optional)</Label>
             <Input
               id="price"
-              type="number"
-              step="0.01"
               value={formData.price}
               onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-              placeholder="0.00"
+              placeholder="e.g., $50, €40, £35"
             />
           </div>
         </div>

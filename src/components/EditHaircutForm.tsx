@@ -102,7 +102,7 @@ export const EditHaircutForm = ({ haircut, onSave, onCancel }: EditHaircutFormPr
       ...formData,
       photos,
       daysAgo,
-      price: formData.price ? parseFloat(formData.price) : undefined,
+      price: formData.price || undefined,
     });
   };
 
@@ -144,7 +144,6 @@ export const EditHaircutForm = ({ haircut, onSave, onCancel }: EditHaircutFormPr
               id="trimmer"
               value={formData.trimmer}
               onChange={(e) => setFormData(prev => ({ ...prev, trimmer: e.target.value }))}
-              placeholder="e.g., Barber name, salon name..."
             />
           </div>
 
@@ -152,11 +151,9 @@ export const EditHaircutForm = ({ haircut, onSave, onCancel }: EditHaircutFormPr
             <Label htmlFor="price">Price (optional)</Label>
             <Input
               id="price"
-              type="number"
-              step="0.01"
               value={formData.price}
               onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-              placeholder="0.00"
+              placeholder="e.g., $50, €40, £35"
             />
           </div>
         </div>
