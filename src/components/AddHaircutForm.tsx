@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Calendar, Camera, Plus, X } from "lucide-react";
+import { Calendar, Camera, Plus, X, Star } from "lucide-react";
 import { Haircut } from "./HaircutCard";
 import { LocationSearch } from "./LocationSearch";
 import heic2any from "heic2any";
@@ -19,6 +19,9 @@ export const AddHaircutForm = ({ onAdd, onCancel }: AddHaircutFormProps) => {
     date: new Date().toISOString().split('T')[0],
     location: '',
     notes: '',
+    trimmer: '',
+    rating: 5,
+    price: '',
   });
   const [photos, setPhotos] = useState<string[]>([]);
 
@@ -94,6 +97,7 @@ export const AddHaircutForm = ({ onAdd, onCancel }: AddHaircutFormProps) => {
     onAdd({
       ...formData,
       photos,
+      price: formData.price ? parseFloat(formData.price) : undefined,
     });
   };
 
@@ -126,6 +130,53 @@ export const AddHaircutForm = ({ onAdd, onCancel }: AddHaircutFormProps) => {
             value={formData.location}
             onChange={(location) => setFormData(prev => ({ ...prev, location }))}
           />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="trimmer">Trimmer (optional)</Label>
+            <Input
+              id="trimmer"
+              value={formData.trimmer}
+              onChange={(e) => setFormData(prev => ({ ...prev, trimmer: e.target.value }))}
+              placeholder="e.g., Barber name, salon name..."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="price">Price (optional)</Label>
+            <Input
+              id="price"
+              type="number"
+              step="0.01"
+              value={formData.price}
+              onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <Star className="h-4 w-4" />
+            Rating *
+          </Label>
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
+                className={`p-1 rounded ${
+                  star <= formData.rating
+                    ? 'text-yellow-400 hover:text-yellow-500'
+                    : 'text-gray-300 hover:text-gray-400'
+                }`}
+              >
+                <Star className={`h-6 w-6 ${star <= formData.rating ? 'fill-current' : ''}`} />
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-2">

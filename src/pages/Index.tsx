@@ -43,13 +43,16 @@ const Index = () => {
           description: "Failed to load haircuts",
         });
       } else {
-        const formattedHaircuts = (data || []).map(haircut => ({
+        const formattedHaircuts = (data || []).map((haircut: any) => ({
           id: haircut.id,
           date: haircut.date,
           location: haircut.location,
           notes: haircut.notes || "",
           photos: haircut.photo_urls || [],
-          daysAgo: calculateDaysSince(haircut.date)
+          daysAgo: calculateDaysSince(haircut.date),
+          trimmer: haircut.trimmer || undefined,
+          rating: haircut.rating || 5,
+          price: haircut.price || undefined,
         }));
         setHaircuts(formattedHaircuts);
         setFilteredHaircuts(formattedHaircuts);
@@ -77,7 +80,10 @@ const Index = () => {
           date: newHaircut.date,
           location: newHaircut.location,
           notes: newHaircut.notes,
-          photo_urls: newHaircut.photos || []
+          photo_urls: newHaircut.photos || [],
+          trimmer: newHaircut.trimmer,
+          rating: newHaircut.rating,
+          price: newHaircut.price,
         }]);
 
       if (error) {
@@ -132,7 +138,10 @@ const Index = () => {
           date: updatedHaircut.date,
           location: updatedHaircut.location,
           notes: updatedHaircut.notes,
-          photo_urls: updatedHaircut.photos || []
+          photo_urls: updatedHaircut.photos || [],
+          trimmer: updatedHaircut.trimmer,
+          rating: updatedHaircut.rating,
+          price: updatedHaircut.price,
         })
         .eq("id", updatedHaircut.id);
 
