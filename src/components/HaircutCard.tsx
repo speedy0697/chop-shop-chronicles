@@ -19,8 +19,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { EditHaircutForm } from "./EditHaircutForm";
 import { ImageCarouselModal } from "./ImageCarouselModal";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 export interface Haircut {
   id: string;
@@ -67,18 +73,9 @@ export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => 
     setShowEditForm(false);
   };
 
-  if (showEditForm) {
-    return (
-      <EditHaircutForm
-        haircut={haircut}
-        onSave={handleEdit}
-        onCancel={() => setShowEditForm(false)}
-      />
-    );
-  }
-
   return (
-    <Card className="overflow-hidden bg-card hover:shadow-soft transition-all duration-300 border-border/50">
+    <>
+      <Card className="overflow-hidden bg-card hover:shadow-soft transition-all duration-300 border-border/50">
       <div className="relative">
         {haircut.photos.length > 0 && (
           <div className="aspect-square overflow-hidden">
@@ -161,6 +158,21 @@ export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => 
           </div>
         )}
       </div>
+      </Card>
+
+      {/* Edit Haircut Modal */}
+      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <VisuallyHidden>
+            <DialogTitle>Edit Haircut</DialogTitle>
+          </VisuallyHidden>
+          <EditHaircutForm
+            haircut={haircut}
+            onSave={handleEdit}
+            onCancel={() => setShowEditForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Image Carousel Modal */}
       <ImageCarouselModal
@@ -190,6 +202,6 @@ export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </>
   );
 };

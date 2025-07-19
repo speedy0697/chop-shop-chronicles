@@ -79,10 +79,17 @@ export const EditHaircutForm = ({ haircut, onSave, onCancel }: EditHaircutFormPr
     e.preventDefault();
     if (!formData.location.trim()) return;
 
+    // Calculate days ago for the updated date
+    const today = new Date();
+    const haircutDate = new Date(formData.date);
+    const timeDiff = today.getTime() - haircutDate.getTime();
+    const daysAgo = Math.floor(timeDiff / (1000 * 3600 * 24));
+
     onSave({
       ...haircut,
       ...formData,
       photos,
+      daysAgo,
     });
   };
 
