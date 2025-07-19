@@ -35,6 +35,9 @@ export interface Haircut {
   photos: string[];
   notes?: string;
   daysAgo: number;
+  trimmer?: string;
+  rating: number;
+  price?: number;
 }
 
 interface HaircutCardProps {
