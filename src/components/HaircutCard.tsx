@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EditHaircutForm } from "./EditHaircutForm";
+import { ImageCarouselModal } from "./ImageCarouselModal";
 
 export interface Haircut {
   id: string;
@@ -39,6 +40,8 @@ interface HaircutCardProps {
 export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const formatDate = (dateString: string) => {
     // Parse the date string manually to avoid timezone issues
@@ -52,8 +55,9 @@ export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => 
     });
   };
 
-  const handleImageClick = () => {
-    setShowEditForm(true);
+  const handleImageClick = (index: number = 0) => {
+    setSelectedImageIndex(index);
+    setShowImageModal(true);
   };
 
   const handleEdit = (updatedHaircut: Haircut) => {
@@ -82,7 +86,7 @@ export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => 
               src={haircut.photos[0]} 
               alt="Haircut"
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-              onClick={handleImageClick}
+              onClick={() => handleImageClick(0)}
             />
           </div>
         )}
@@ -137,22 +141,34 @@ export const HaircutCard = ({ haircut, onEdit, onDelete }: HaircutCardProps) => 
         {haircut.photos.length > 1 && (
           <div className="flex gap-2 mt-3">
             {haircut.photos.slice(1, 4).map((photo, index) => (
-              <div key={index} className="w-12 h-12 rounded-md overflow-hidden">
+              <div key={index} className="w-12 h-12 rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                 <img 
                   src={photo} 
                   alt={`Haircut ${index + 2}`}
                   className="w-full h-full object-cover"
+                  onClick={() => handleImageClick(index + 1)}
                 />
               </div>
             ))}
             {haircut.photos.length > 4 && (
-              <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
+              <div 
+                className="w-12 h-12 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground cursor-pointer hover:bg-muted/80 transition-colors"
+                onClick={() => handleImageClick(4)}
+              >
                 +{haircut.photos.length - 4}
               </div>
             )}
           </div>
         )}
       </div>
+
+      {/* Image Carousel Modal */}
+      <ImageCarouselModal
+        isOpen={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        images={haircut.photos}
+        initialIndex={selectedImageIndex}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
